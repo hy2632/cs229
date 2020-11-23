@@ -1,3 +1,6 @@
 {
-    "python.pythonPath": "/home/hy2632/anaconda3/envs/squad/bin/python"
+    "python.pythonPath": "/home/hy2632/anaconda3/envs/squad/bin/python",
+    "python.linting.pycodestyleEnabled": false,
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }
