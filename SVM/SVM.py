@@ -1,8 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 from tqdm.notebook import tqdm
-from Kernel_FeatureMaps import *
-
+from Kernel_FeatureMaps import *;
 
 class SVM(object):
     """ 
@@ -27,6 +26,7 @@ class SVM(object):
         featuremap: feature mapping corresponding to the kernel used
         batch_size: int, also denoted as n
         C: l1 regularization term for soft margin. alpha_i in [0, C]. Set as np.inf (no regularization), because the form of b is nasty under regularization.
+        tol = 1e-6: tolerance, deciding when to end training
 
         Intermediate parameters:
         ---------
@@ -48,21 +48,22 @@ class SVM(object):
                  kernel=Kernel.Linear,
                  featuremap=FeatureMap.Linear,
                  batch_size=64,
-                 C=np.inf):
+                 C=np.inf,
+                 tol=1e-6):
         # C set as np.inf here -- no regularization
 
         # X: (N,d), Y: (N,), x: (n,d), y:(n,)
         # Fixed values
         self.N, self.d = X.shape
-        self.n = batch_size
-        self.C = C
-        self.X = X
-
         # Normalize data
+        self.X = X
         self.X = self.X / np.linalg.norm(self.X, axis=1, keepdims=True)
         self.Y = Y
         self.kernel = kernel
         self.featuremap = featuremap
+        self.n = batch_size
+        self.C = C
+        self.tol = tol
 
         batch_indices = np.random.choice(np.arange(self.N), self.n)
         self.x = self.X[batch_indices]
@@ -85,7 +86,7 @@ class SVM(object):
     def dual_obj(self, alpha):
         return np.sum(alpha) - np.sum(0.5 * self.M * np.outer(alpha, alpha))
 
-    def fit(self, iterations=200000, tol=1e-10):
+    def fit(self, iterations=200000):
         prev_val = self.alpha.copy()
 
         for i in tqdm(range(iterations)):
@@ -110,7 +111,7 @@ class SVM(object):
 
             # Check convergence
             if (i % 5 == 1):
-                if np.sum(np.abs(self.alpha - prev_val)) < tol:
+                if np.sum(np.abs(self.alpha - prev_val)) < self.tol:
                     print(
                         f">> Optimized on the batch, step {i}. 5 steps Δalpha:{np.sum(np.abs(self.alpha - prev_val))}"
                     )
